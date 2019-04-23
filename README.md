@@ -27,29 +27,32 @@ You don't have to fill out every field - just the last five. The owner_id field 
 # How to use twitter_gatherer.py
 _twitter_gatherer.py_ is best used to collect either a stream, or to listen to accounts.
 
-* To listen to a stream, edit targets.txt in the config directory to include all the search terms you wish to collect on (one per line), and then just run twitter_gatherer.py with no command-line options.
-* To listen to accounts, gather a list of the accounts' Twitter IDs, and write a file - followid.txt under the config directory that contains one account ID per line. Then run _twitter_gatherer.py followid_
+* To listen to a stream, edit _targets.txt_ in the config directory to include all the search terms you wish to collect on (one per line), and then just run _twitter_gatherer.py_ with no command-line options.
+* To listen to accounts, gather a list of the accounts' Twitter IDs, and write a file - _followid.txt_ under the config directory that contains one account ID per line. Then run _twitter_gatherer.py followid_
 
-To convert screen_names into account IDs you can use resolve_sns.ipynb. Save the list of screen_names in a text file with one screen_name per line. Then edit resolve_sns.ipynb as appropriate to point to the file. It will attempt to resolve all of the screen_names and output details for each account resolved, and a text file of account IDs compatible with twitter_gatherer.py's followid. Alternatively, use the approach detailed in the next paragraph, and copy-paste the IDs printed at the command line when twitter_gatherer.py runs.
+To convert screen_names into account IDs you can use _resolve_sns.ipynb_. Save the list of screen_names in a text file with one screen_name per line. Then edit resolve_sns.ipynb as appropriate to point to the file. It will attempt to resolve all of the screen_names and output details for each account resolved, and a text file of account IDs compatible with _twitter_gatherer.py_'s followid. Alternatively, use the approach detailed in the next paragraph, and copy-paste the IDs printed at the command line when _twitter_gatherer.py_ runs.
 
 Note, you can also follow accounts by their screen_names. Create a file called follow.txt under the config directory. Write the screen_names to the file, one name per line. Then call _twitter_gatherer.py follow_
 This will work fine, until accounts get renamed. Hence using id_strs is recommended.
 
-All collected Twitter objects are abbreviated (see the source code for what is collected) and saved sequentially to data/raw.json as long as twitter_gatherer.py is running. You may open gatherer_analysis_master.ipynb at any time and load the data, as it is being collected.
+All collected Twitter objects are abbreviated (see the source code for what is collected) and saved sequentially to data/raw.json as long as _twitter_gatherer.py_ is running. You may open _gatherer_analysis_master.ipynb_ at any time and load the data, as it is being collected.
 
+---
 # How to use gatherer_analysis_master.ipynb
-gatherer_analysis_master.ipynb creates a directory named analysis_live, where it stores all processed metadata. You can use files such as retweet_interactions.csv created under analysis_live to create gephi visualizations. 
+gatherer_analysis_master.ipynb creates a directory named analysis_live, where it stores all processed metadata. You can use files such as _retweet_interactions.csv_ created under analysis_live to create gephi visualizations. 
 
-gatherer_analysis_master.ipynb is pretty self-explanatory. Early cells contain variables that can be set to dictate which time period the analysis runs on. Later, analyses are performed on lists of hashtags/domains/screen_names. These can be replaced with manually entered lists for targeted analysis.
+_gatherer_analysis_master.ipynb_ is pretty self-explanatory. Early cells contain variables that can be set to dictate which time period the analysis runs on. Later, analyses are performed on lists of hashtags/domains/screen_names. These can be replaced with manually entered lists for targeted analysis.
 
+---
 # How to use twitter_user_analysis.ipynb
 Use twitter_user_analysis.ipynb to analyze a single Twitter account. Edit the target field in the notebook to change the account analyzed. Each time it is run, it will create a directory with the screen_name of the user queried under user_analysis. It stores downloaded data in this directory. If you want to re-run a user analysis, delete or rename the relevant directory.
 
-# Where is twitter_no_rl_tool.py?
-The twitter_no_rl_tool.py file is not included in this repo. It is my own "proprietary technology" tool for gathering twitter user objects and for iterating followers and friends of Twitter accounts. If you need to replicate its behavior, it is entirely possible with tweepy/twarc/TwitterAPI.
+---
+# Y NO twitter_no_rl_tool.py?
+The _twitter_no_rl_tool.py_ file is not included in this repo. It is my own "proprietary technology" tool for gathering twitter user objects and for iterating followers and friends of Twitter accounts. If you need to replicate its behavior, it is entirely possible with tweepy/twarc/TwitterAPI.
 
-resolve_sns_no_save() simply takes a list of screen_names as input and returns a list of user objects
-get_follower_data_sn() and get_friends_data_sn() take a screen_name as input and return a list of user object (either followers or friends)
+_resolve_sns_no_save()_ simply takes a list of screen_names as input and returns a list of user objects
+_get_follower_data_sn()_ and _get_friends_data_sn()_ take a screen_name as input and return a list of user object (either followers or friends)
 
 Example code to get an account's followers:
 ```python
