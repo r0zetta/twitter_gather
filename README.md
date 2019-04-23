@@ -1,7 +1,7 @@
 # twitter_gather
 The latest version of my Twitter data collection and analysis tools. Consider all other stuff deprecated.
 
-All other stuff is deprecated.
+Repeat: All other stuff is deprecated.
 
 To use:
 - collect data with twitter_gatherer.py
