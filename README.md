@@ -80,6 +80,9 @@ while True:
         else:
             print("Done. Found " + str(count) + " followers.")
             break
-return follower_info
+# Do stuff with follower_info
+for d in follower_info:
+    if d["default_profile"] == True and d["default_profile_image"] == True:
+        print(d["screen_name" + " is an EGG!")
 ```
 
