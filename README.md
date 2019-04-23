@@ -179,3 +179,6 @@ for d in details:
 ```
 
 I wrote the above code in this README. It might or might not work. But you get the idea.
+
+# Why is the code in your jupyter notebooks so copy-paste?
+I'm working on refactoring it, but I don't have time right now. Yeah, it's terrible to look at. I know. I'll get to it soon(tm).
