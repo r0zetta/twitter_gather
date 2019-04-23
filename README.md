@@ -59,36 +59,120 @@ Example code to get an account's followers:
 from TwitterAPI import TwitterAPI
 import time, json
 
-auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+def get_follower_data_sn(target):
+    auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+    follower_info = []
+    while True:
+        followers_raw = auth.request('followers/list', {'screen_name': target, 
+                                                        'count': 200, 
+                                                        'cursor':cursor, 
+                                                        'skip_status':True, 
+                                                        'include_user_entities': False})
+        followers_clean = json.loads(followers_raw.response.text)
+        if "next_cursor" in followers_clean and followers_clean["next_cursor"] > 0:
+            cursor = followers_clean['next_cursor']
+            for follower in followers_clean["users"]:
+                entry = {}
+                fields = ["id_str", "name", "description", "screen_name", "followers_count", "friends_count", "statuses_count", "created_at", "favourites_count", "default_profile", "default_profile_image", "protected", "verified"]
+                for field in fields:
+                    if field in follower:
+                        entry[field] = follower[field]
+                follower_info.append(entry)
+        else:
+            if "errors" in followers_clean:
+                for e in followers_clean["errors"]:
+                    if "code" in e:
+                        if e["code"] == 88:
+                            print("Rate limit exceeded.")
+                            time.sleep(900)
+            else:
+                print("Done. Found " + str(count) + " followers.")
+                break
+    return follower_info
+
+def get_friends_data_sn(target):
+    auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+    friends_info = []
+    while True:
+        friends_raw = auth.request('friends/list', {'screen_name': target, 
+                                                    'count': 200, 
+                                                    'cursor':cursor, 
+                                                    'skip_status':True, 
+                                                    'include_user_entities': False})
+        friends_clean = json.loads(friends_raw.response.text)
+        if "next_cursor" in friends_clean and friends_clean["next_cursor"] > 0:
+            cursor = friends_clean['next_cursor']
+            for friend in friends_clean["users"]:
+                entry = {}
+                fields = ["id_str", "name", "description", "screen_name", "followers_count", "friends_count", "statuses_count", "created_at", "favourites_count", "default_profile", "default_profile_image", "protected", "verified"]
+                for field in fields:
+                    if field in friend:
+                        entry[field] = friend[field]
+                friends_info.append(entry)
+        else:
+            if "errors" in friends_clean:
+                for e in friends_clean["errors"]:
+                    if "code" in e:
+                        if e["code"] == 88:
+                            print("Rate limit exceeded.")
+                            time.sleep(900)
+            else:
+                print("Done. Found " + str(count) + " friends.")
+                break
+    return friends_info
+
+def resolve_sns_no_save(sn_list):
+    if len(sn_list) < 1:
+        print("No users provided.")
+        return
+    print("Getting details on " + str(len(sn_list)) + " users.")
+    batch_len = 100
+    num_batches = int(len(sn_list)/batch_len)
+    batches = (sn_list[i:i+batch_len] for i in range(0, len(sn_list), batch_len))
+    auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+    for b in batches:
+        data_raw = auth.request('users/lookup', {'screen_name': b})
+        while True:
+            followers_clean = json.loads(followers_raw.response.text)
+            if "next_cursor" in followers_clean and followers_clean["next_cursor"] > 0:
+                cursor = followers_clean['next_cursor']
+                for follower in followers_clean["users"]:
+                    entry = {}
+                    fields = ["id_str", "name", "description", "screen_name", "followers_count", "friends_count", "statuses_count", "created_at", "favourites_count", "default_profile", "default_profile_image", "protected", "verified"]
+                    for field in fields:
+                        if field in follower and follower[field] is not None:
+                            entry[field] = follower[field]
+                    follower_info.append(entry)
+            else:
+                if "errors" in followers_clean:
+                    for e in followers_clean["errors"]:
+                        if "code" in e:
+                            if e["code"] == 88:
+                                print("Rate limit exceeded.")
+                                countdown_timer(900)
+                else:
+                    print("Done. Found " + str(count) + " followers.")
+                    break
+    return follower_info
 
 t = "target_screen_name"
 
-follower_info = []
-while True:
-    followers_raw = auth.request('followers/list', {'screen_name': t, 'count': 200, 'cursor':cursor, 'skip_status':True, 'include_user_entities': False})
-    followers_clean = json.loads(followers_raw.response.text)
-    if "next_cursor" in followers_clean and followers_clean["next_cursor"] > 0:
-        cursor = followers_clean['next_cursor']
-        for follower in followers_clean["users"]:
-            entry = {}
-            fields = ["id_str", "name", "description", "screen_name", "followers_count", "friends_count", "statuses_count", "created_at", "favourites_count", "default_profile", "default_profile_image", "protected", "verified"]
-            for field in fields:
-                if field in follower:
-                    entry[field] = follower[field]
-            follower_info.append(entry)
-    else:
-        if "errors" in followers_clean:
-            for e in followers_clean["errors"]:
-                if "code" in e:
-                    if e["code"] == 88:
-                        print("Rate limit exceeded.")
-                        time.sleep(900)
-        else:
-            print("Done. Found " + str(count) + " followers.")
-            break
-# Do stuff with follower_info
-for d in follower_info:
+sn_list = set()
+
+followers = get_follower_data_sn(t)
+for d in followers:
+    sn_list.add(d["screen_name"])
+    if d["default_profile"] == True and d["default_profile_image"] == True:
+        print(d["screen_name"] + " is an EGG!")
+
+friends = get_friends_data_sn(t)
+for d in friends:
+    sn_list.add(d["screen_name"])
+    if d["default_profile"] == True and d["default_profile_image"] == True:
+        print(d["screen_name"] + " is an EGG!")
+
+details = resolve_sns_no_save(list(sn_list))
+for d in details:
     if d["default_profile"] == True and d["default_profile_image"] == True:
         print(d["screen_name"] + " is an EGG!")
 ```
-
