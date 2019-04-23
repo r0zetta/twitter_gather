@@ -25,7 +25,6 @@ You don't have to fill out every field - just the last five. The owner_id field 
 
 ---
 # How to use twitter_gatherer.py
-
 _twitter_gatherer.py_ is best used to collect either a stream, or to listen to accounts.
 
 * To listen to a stream, edit targets.txt in the config directory to include all the search terms you wish to collect on (one per line), and then just run twitter_gatherer.py with no command-line options.
@@ -38,9 +37,49 @@ This will work fine, until accounts get renamed. Hence using id_strs is recommen
 
 All collected Twitter objects are abbreviated (see the source code for what is collected) and saved sequentially to data/raw.json as long as twitter_gatherer.py is running. You may open gatherer_analysis_master.ipynb at any time and load the data, as it is being collected.
 
-gatherer_analysis_master.ipynb is pretty self-explanatory. Early cells contain variables that can be set to dictate which time period the analysis runs on. Later, analyses are performed on lists of hashtags/domains/screen_names. These can be replaced with manually entered lists for targeted analysis.
-
+# How to use gatherer_analysis_master.ipynb
 gatherer_analysis_master.ipynb creates a directory named analysis_live, where it stores all processed metadata. You can use files such as retweet_interactions.csv created under analysis_live to create gephi visualizations. 
 
-Use twitter_user_analysis.ipynb to analyze a single Twitter account. Each time it is run, it will create a directory with the screen_name of the user queried under user_analysis. It stores downloaded data in this directory. If you want to re-run a user analysis, delete or rename the relevant directory.
+gatherer_analysis_master.ipynb is pretty self-explanatory. Early cells contain variables that can be set to dictate which time period the analysis runs on. Later, analyses are performed on lists of hashtags/domains/screen_names. These can be replaced with manually entered lists for targeted analysis.
+
+# How to use twitter_user_analysis.ipynb
+Use twitter_user_analysis.ipynb to analyze a single Twitter account. Edit the target field in the notebook to change the account analyzed. Each time it is run, it will create a directory with the screen_name of the user queried under user_analysis. It stores downloaded data in this directory. If you want to re-run a user analysis, delete or rename the relevant directory.
+
+# Where is twitter_no_rl_tool.py?
+The twitter_no_rl_tool.py file is not included in this repo. It is my own "proprietary technology" tool for gathering twitter user objects and for iterating followers and friends of Twitter accounts. If you need to replicate its behavior, it is entirely possible with tweepy/twarc/TwitterAPI.
+
+resolve_sns_no_save() simply takes a list of screen_names as input and returns a list of user objects
+get_follower_data_sn() and get_friends_data_sn() take a screen_name as input and return a list of user object (either followers or friends)
+
+Example code to get an account's followers:
+```
+from TwitterAPI import TwitterAPI
+import time, json
+auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+t = "target_screen_name"
+follower_info = []
+while True:
+    followers_raw = auth.request('followers/list', {'screen_name': t, 'count': 200, 'cursor':cursor, 'skip_status':True, 'include_user_entities': False})
+    followers_clean = json.loads(followers_raw.response.text)
+    if "next_cursor" in followers_clean and followers_clean["next_cursor"] > 0:
+        cursor = followers_clean['next_cursor']
+        for follower in followers_clean["users"]:
+            entry = {}
+            fields = ["id_str", "name", "description", "screen_name", "followers_count", "friends_count", "statuses_count", "created_at", "favourites_count", "default_profile", "default_profile_image", "protected", "verified"]
+            for field in fields:
+                if field in follower:
+                    entry[field] = follower[field]
+            follower_info.append(entry)
+    else:
+        if "errors" in followers_clean:
+            for e in followers_clean["errors"]:
+                if "code" in e:
+                    if e["code"] == 88:
+                        print("Rate limit exceeded.")
+                        time.sleep(900)
+        else:
+            print("Done. Found " + str(count) + " followers.")
+            break
+return follower_info
+```
 
