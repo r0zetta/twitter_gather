@@ -55,8 +55,11 @@ Example code to get an account's followers:
 ```python
 from TwitterAPI import TwitterAPI
 import time, json
+
 auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+
 t = "target_screen_name"
+
 follower_info = []
 while True:
     followers_raw = auth.request('followers/list', {'screen_name': t, 'count': 200, 'cursor':cursor, 'skip_status':True, 'include_user_entities': False})
