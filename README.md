@@ -45,7 +45,7 @@ _gatherer_analysis_master.ipynb_ is pretty self-explanatory. Early cells contain
 
 ---
 # How to use twitter_user_analysis.ipynb
-Use twitter_user_analysis.ipynb to analyze a single Twitter account. Edit the target field in the notebook to change the account analyzed. Each time it is run, it will create a directory with the screen_name of the user queried under user_analysis. It stores downloaded data in this directory. If you want to re-run a user analysis, delete or rename the relevant directory.
+Use twitter_user_analysis.ipynb to analyze a single Twitter account. Edit the target field in the notebook to change the account analyzed. Each time it is run, it will create a directory with the _screen_name_ of the user queried under the _user_analysis/_ directory. It stores downloaded data in this directory. If you want to re-run a user analysis with updated information, delete or rename the relevant directory.
 
 ---
 # Y NO twitter_no_rl_tool.py?
