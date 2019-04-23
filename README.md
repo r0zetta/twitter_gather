@@ -21,7 +21,7 @@ access_token=key_data
 access_token_secret=key_data
 ```
 
-You don't have to fill out every field - just the last five. The owner_id field can be whatever you'd like - its just a tag that will let you know which account the script is using if you have multiple keys available.
+You don't have to fill out every field - just the last four, plus the owner field. The owner field can be whatever you'd like - its just a tag that will let you know which account the script is using if you have multiple keys available.
 
 ---
 # How to use twitter_gatherer.py
