@@ -14,6 +14,9 @@ twitter_gatherer.py is best used to collect either a stream, or to listen to acc
 To listen to a stream, edit targets.txt in the config directory to include all the search terms you wish to collect on (one per line), and then just run twitter_gatherer.py with no command-line options.
 To listen to accounts, gather a list of the accounts' Twitter IDs, and write a file - followid.txt under the config directory that contains one account ID per line. Then run twitter_gatherer.py followid
 
+Note, you can also follow accounts by their screen_names. Create a file called follow.txt under the config directory. Write the screen_names to the file, one name per line. Then call twitter_gatherer.py follow
+This will work fine, until accounts get renamed. Hence using id_strs is recommended.
+
 All collected Twitter objects are abbreviated (see the source code for what is collected) and saved sequentially to data/raw.json as long as twitter_gatherer.py is running. You may open gatherer_analysis_master.ipynb at any time and load the data, as it is being collected.
 
 gatherer_analysis_master.ipynb is pretty self-explanatory. Early cells contain variables that can be set to dictate which time period the analysis runs on. Later, analyses are performed on lists of hashtags/domains/screen_names. These can be replaced with manually entered lists for targeted analysis.
