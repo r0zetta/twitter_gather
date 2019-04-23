@@ -181,4 +181,6 @@ for d in details:
 I wrote the above code in this README. It might or might not work. But you get the idea.
 
 # Why is the code in your jupyter notebooks so copy-paste?
-Most of the code was written in a hurry, while researching recently Twitter trends. I'm working on refactoring it, but I don't have time right now. Yeah, I completely agree that it's terrible to look at. I'll get to making it better soon(tm).
+Most of the code was written in a hurry, while researching recent Twitter trends and topics. I guess that's the life of a disinfo researcher. I'm working on refactoring the code that's there, but I'm doing other stuff at the moment, and don't have time. Yeah, I agree that it's terrible to look at.
+
+Refactoring will happen soon(tm). No need for PRs.
