@@ -177,3 +177,5 @@ for d in details:
     if d["default_profile"] == True and d["default_profile_image"] == True:
         print(d["screen_name"] + " is an EGG!")
 ```
+
+I wrote the above code in this README. It might or might not work. But you get the idea.
