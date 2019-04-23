@@ -1370,10 +1370,6 @@ def get_counters_and_interactions2(raw_data):
             susp_twids.add(twid)
             counters["susp_users"][sn] += 1
 
-        if num_w < 6 and num_m >= 10:
-            susp_twids.add(twid)
-            counters["susp_users"][sn] += 1
-
         if "retweeted_status" in d:
             rsn = d["retweeted_status"]["user"]["screen_name"]
             sn_details[rsn] = d["retweeted_status"]["user"]
