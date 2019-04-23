@@ -54,7 +54,7 @@ The _twitter_no_rl_tool.py_ file is not included in this repo. It is my own "pro
 _resolve_sns_no_save()_ simply takes a list of screen_names as input and returns a list of user objects
 _get_follower_data_sn()_ and _get_friends_data_sn()_ take a screen_name as input and return a list of user object (either followers or friends)
 
-Example code to get an account's followers:
+Example code:
 ```python
 from TwitterAPI import TwitterAPI
 import time, json
