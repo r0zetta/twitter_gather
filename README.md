@@ -89,6 +89,6 @@ while True:
 # Do stuff with follower_info
 for d in follower_info:
     if d["default_profile"] == True and d["default_profile_image"] == True:
-        print(d["screen_name" + " is an EGG!")
+        print(d["screen_name"] + " is an EGG!")
 ```
 
