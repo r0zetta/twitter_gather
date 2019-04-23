@@ -1,5 +1,5 @@
 # twitter_gather
-The latest version of my Twitter data collection and analysis tools
+The latest version of my Twitter data collection and analysis tools. Consider all other stuff deprecated.
 
 All other stuff is deprecated.
 
