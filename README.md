@@ -57,7 +57,7 @@ _get_follower_data_sn()_ and _get_friends_data_sn()_ take a screen_name as input
 Example code:
 ```python
 from TwitterAPI import TwitterAPI
-import time, json
+import time, json, time
 
 def get_follower_data_sn(target):
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
