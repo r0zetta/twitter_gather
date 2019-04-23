@@ -130,30 +130,31 @@ def resolve_sns_no_save(sn_list):
     num_batches = int(len(sn_list)/batch_len)
     batches = (sn_list[i:i+batch_len] for i in range(0, len(sn_list), batch_len))
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
+    info = []
     for b in batches:
         data_raw = auth.request('users/lookup', {'screen_name': b})
         while True:
-            followers_clean = json.loads(followers_raw.response.text)
-            if "next_cursor" in followers_clean and followers_clean["next_cursor"] > 0:
-                cursor = followers_clean['next_cursor']
-                for follower in followers_clean["users"]:
+            data_clean = json.loads(data_raw.response.text)
+            if "next_cursor" in data_clean and data_clean["next_cursor"] > 0:
+                cursor = data_clean['next_cursor']
+                for data in data_clean["users"]:
                     entry = {}
                     fields = ["id_str", "name", "description", "screen_name", "followers_count", "friends_count", "statuses_count", "created_at", "favourites_count", "default_profile", "default_profile_image", "protected", "verified"]
                     for field in fields:
-                        if field in follower and follower[field] is not None:
-                            entry[field] = follower[field]
-                    follower_info.append(entry)
+                        if field in data and data[field] is not None:
+                            entry[field] = data[field]
+                    info.append(entry)
             else:
-                if "errors" in followers_clean:
-                    for e in followers_clean["errors"]:
+                if "errors" in data_clean:
+                    for e in data_clean["errors"]:
                         if "code" in e:
                             if e["code"] == 88:
                                 print("Rate limit exceeded.")
                                 countdown_timer(900)
                 else:
-                    print("Done. Found " + str(count) + " followers.")
+                    print("Done. Found " + str(count) + " objects.")
                     break
-    return follower_info
+    return info
 
 t = "target_screen_name"
 
