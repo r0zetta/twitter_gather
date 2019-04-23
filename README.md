@@ -52,7 +52,7 @@ resolve_sns_no_save() simply takes a list of screen_names as input and returns a
 get_follower_data_sn() and get_friends_data_sn() take a screen_name as input and return a list of user object (either followers or friends)
 
 Example code to get an account's followers:
-```
+```python
 from TwitterAPI import TwitterAPI
 import time, json
 auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
