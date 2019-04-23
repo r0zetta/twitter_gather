@@ -52,7 +52,7 @@ Use twitter_user_analysis.ipynb to analyze a single Twitter account. Edit the ta
 The _twitter_no_rl_tool.py_ file is not included in this repo. It is my own "proprietary technology" tool for gathering twitter user objects and for iterating followers and friends of Twitter accounts. If you need to replicate its behavior, it is entirely possible with tweepy/twarc/TwitterAPI.
 
 _resolve_sns_no_save()_ simply takes a list of screen_names as input and returns a list of user objects
-_get_follower_data_sn()_ and _get_friends_data_sn()_ take a screen_name as input and return a list of user object (either followers or friends)
+_get_follower_data_sn()_ and _get_friends_data_sn()_ take a screen_name as input and return a list of user objects (either followers or friends)
 
 Example code:
 ```python
