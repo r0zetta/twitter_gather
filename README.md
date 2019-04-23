@@ -39,7 +39,7 @@ All collected Twitter objects are abbreviated (see the source code for what is c
 
 ---
 # How to use gatherer_analysis_master.ipynb
-gatherer_analysis_master.ipynb creates a directory named analysis_live, where it stores all processed metadata. You can use files such as _retweet_interactions.csv_ created under analysis_live to create gephi visualizations. 
+gatherer_analysis_master.ipynb creates a directory named analysis_live, where it stores all processed metadata. You can use files such as _retweet_interactions.csv_ created under _analysis_live/_ to create gephi visualizations. 
 
 _gatherer_analysis_master.ipynb_ is pretty self-explanatory. Early cells contain variables that can be set to dictate which time period the analysis runs on. Later, analyses are performed on lists of hashtags/domains/screen_names. These can be replaced with manually entered lists for targeted analysis.
 
