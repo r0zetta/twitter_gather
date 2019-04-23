@@ -9,6 +9,19 @@ To use:
 
 Collecting data:
 
+First things first: you must create at least one key in the keys/ directory. There's an example file in there. Each key file can be named whatever you'd like. Each key file looks like this:
+
+email=email.address@emailaddress.com
+owner=twitter_handle
+name=Twitter Name
+owner_id=numeric_twitter_id
+consumer_key=key_data
+consumer_secret=key_data
+access_token=key_data
+access_token_secret=key_data
+
+You don't have to fill out every field - just the last five. The owner_id field can be whatever you'd like - its just a tag that will let you know which account the script is using if you have multiple keys available.
+
 twitter_gatherer.py is best used to collect either a stream, or to listen to accounts.
 
 To listen to a stream, edit targets.txt in the config directory to include all the search terms you wish to collect on (one per line), and then just run twitter_gatherer.py with no command-line options.
