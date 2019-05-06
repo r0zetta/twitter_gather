@@ -1593,8 +1593,18 @@ class Tweet(object):
             # Use Twitter's oEmbed API
             # https://dev.twitter.com/web/embedded-tweets
             api = 'https://publish.twitter.com/oembed?url={}'.format(s)
-            response = requests.get(api)
-            self.text = response.json()["html"]
+            response = None
+            try:
+                response = requests.get(api)
+            except:
+                pass
+            if response is not None:
+                try:
+                    self.text = response.json()["html"]
+                except:
+                    self.text = s
+            else:
+                self.text = s
         else:
             self.text = s
 
