@@ -2,6 +2,7 @@ from igraph import *
 import sys, os, io, random, json, re
 import pandas as pd
 import numpy as np
+import requests
 from collections import Counter
 from time_helpers import *
 from file_helpers import *
@@ -1585,3 +1586,17 @@ def get_timestamps(num):
         timestamps.append(timestamp)
         current_unix -= 3600
     return timestamps
+
+class Tweet(object):
+    def __init__(self, s, embed_str=False):
+        if not embed_str:
+            # Use Twitter's oEmbed API
+            # https://dev.twitter.com/web/embedded-tweets
+            api = 'https://publish.twitter.com/oembed?url={}'.format(s)
+            response = requests.get(api)
+            self.text = response.json()["html"]
+        else:
+            self.text = s
+
+    def _repr_html_(self):
+        return self.text
