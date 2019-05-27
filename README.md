@@ -62,6 +62,7 @@ import time, json, time
 def get_follower_data_sn(target):
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
     follower_info = []
+    cursor =  -1
     while True:
         followers_raw = auth.request('followers/list', {'screen_name': target, 
                                                         'count': 200, 
@@ -93,6 +94,7 @@ def get_follower_data_sn(target):
 def get_friends_data_sn(target):
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
     friends_info = []
+    cursor =  -1
     while True:
         friends_raw = auth.request('friends/list', {'screen_name': target, 
                                                     'count': 200, 
