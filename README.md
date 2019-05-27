@@ -54,15 +54,22 @@ The _twitter_no_rl_tool.py_ file is not included in this repo. It is my own "pro
 _resolve_sns_no_save()_ simply takes a list of screen_names as input and returns a list of user objects
 _get_follower_data_sn()_ and _get_friends_data_sn()_ take a screen_name as input and return a list of user objects (either followers or friends)
 
-Example code, if you're too lazy to have read my multitude of blog posts on the matter (https://labsblog.f-secure.com/author/andypatelfs/):
+Example code (which I didn't test, and probably doesn't run - it's just a suggestion for code based on TwitterAPI that may work).
+
 ```python
 from TwitterAPI import TwitterAPI
 import time, json, time
+
+consumer_key=""
+consumer_secret=""
+access_token=""
+access_token_secret=""
 
 def get_follower_data_sn(target):
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
     follower_info = []
     cursor =  -1
+    count = 0
     while True:
         followers_raw = auth.request('followers/list', {'screen_name': target, 
                                                         'count': 200, 
@@ -79,6 +86,7 @@ def get_follower_data_sn(target):
                     if field in follower:
                         entry[field] = follower[field]
                 follower_info.append(entry)
+                count += 1
         else:
             if "errors" in followers_clean:
                 for e in followers_clean["errors"]:
@@ -95,6 +103,7 @@ def get_friends_data_sn(target):
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
     friends_info = []
     cursor =  -1
+    count = 0
     while True:
         friends_raw = auth.request('friends/list', {'screen_name': target, 
                                                     'count': 200, 
@@ -111,6 +120,7 @@ def get_friends_data_sn(target):
                     if field in friend:
                         entry[field] = friend[field]
                 friends_info.append(entry)
+                count += 1
         else:
             if "errors" in friends_clean:
                 for e in friends_clean["errors"]:
@@ -133,6 +143,7 @@ def resolve_sns_no_save(sn_list):
     batches = (sn_list[i:i+batch_len] for i in range(0, len(sn_list), batch_len))
     auth = TwitterAPI(consumer_key, consumer_secret, access_token, access_token_secret)
     info = []
+    count = 0
     for b in batches:
         data_raw = auth.request('users/lookup', {'screen_name': b})
         while True:
@@ -146,6 +157,7 @@ def resolve_sns_no_save(sn_list):
                         if field in data and data[field] is not None:
                             entry[field] = data[field]
                     info.append(entry)
+                    count += 1
             else:
                 if "errors" in data_clean:
                     for e in data_clean["errors"]:
@@ -181,6 +193,8 @@ for d in details:
 ```
 
 I wrote the above code in this README. It might or might not work. But you get the idea.
+
+You can also find various (slightly old) blog posts on Twitter collection methods here (https://labsblog.f-secure.com/author/andypatelfs/)
 
 # Why is the code in your jupyter notebooks so copy-paste?
 Most of the code was written in a hurry, while researching recent Twitter trends and topics. I guess that's the life of a disinfo researcher. I'm working on refactoring the code that's there, but I'm doing other stuff at the moment, and don't have time. Yeah, I agree that it's terrible to look at.
