@@ -1,9 +1,11 @@
-from igraph import *
+#from igraph import *
+import networkx as nx
+import community
 import sys, os, io, random, json, re
 import pandas as pd
 import numpy as np
 import requests
-from collections import Counter
+from collections import Counter, deque
 from time_helpers import *
 from file_helpers import *
 from process_tweet_object import *
@@ -137,6 +139,36 @@ if os.path.exists(uscsfn):
 #####################################
 # Basic helper functions
 #####################################
+def get_date_shortened(ca):
+    ds = "-UNK-"
+    if len(ca) >= 10:
+        yr = ca[-4:]
+        mon = md[ca[4:7]]
+        day = ca[8:10]
+        ds = str(yr) + "-" + str(mon) + "-" + str(day)
+    return ds
+
+def is_date_after(twitter_timestamp, date_cutoff):
+    if len(date_cutoff) < 4:
+        return True
+    yr_cutoff = "1970"
+    mon_cutoff = "01"
+    day_cutoff = "01"
+    if len(date_cutoff) >= 4:
+        yr_cutoff = int(date_cutoff[:4])
+    if len(date_cutoff) >= 7:
+        mon_cutoff = int(date_cutoff[5:7])
+    if len(date_cutoff) >= 10:
+        day_cutoff = int(date_cutoff[9:])
+    dc = str(yr_cutoff) + "-" + str(mon_cutoff) + "-" + str(day_cutoff) 
+    ds = get_date_shortened(twitter_timestamp)
+    if ds == "-UNK-":
+        return False
+
+    date1 = time.strptime(dc, "%Y-%m-%d")
+    date2 = time.strptime(ds, "%Y-%m-%d")
+    return date2 > date1
+
 def get_keywords():
     return keywords
 
@@ -216,16 +248,16 @@ def print_sn_counter(sn_list, num):
 
 def print_hashtag_list(ht_list):
     for ht in ht_list:
-        print("https://twitter.com/search?q=%23" + ht)
+        print("#" + ht)
 
 def print_hashtag_counter(ht_list, num):
     for ht, count in ht_list.most_common(num):
-        htstr = "https://twitter.com/search?q=%23" + ht
+        htstr = "#" + ht
         print(str(count) + "\t" + htstr)
 
 def print_counter(ct, num):
     for item, count in ct.most_common(num):
-        print(str(count) + "\t" + item)
+        print(str(count) + "\t" + str(item))
 
 def print_counters(counters, user_fields, list_len):
     counter_names = [x for x, y in counters.items()]
@@ -272,26 +304,13 @@ def print_tweet_counts(tc):
 def print_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
     ret = []
     total = 0
-    yr_cutoff = None
-    mon_cutoff = None
-    day_cutoff = None
-    if len(date_cutoff) > 0:
-        if len(date_cutoff) >= 4:
-            yr_cutoff = int(date_cutoff[:4])
-        if len(date_cutoff) >= 7:
-            mon_cutoff = int(date_cutoff[5:7])
-        if len(date_cutoff) >= 10:
-            day_cutoff = int(date_cutoff[9:])
     print("User                                            | sc    | fl    | fr    |egg|  ca        | summary")
     print("==================================================================================================")
     for d in rdetails:
         ds = "-UNK-"
         if "created_at" in d:
             ca = d["created_at"]
-            yr = ca[-4:]
-            mon = md[ca[4:7]]
-            day = ca[8:10]
-            ds = str(yr) + "-" + str(mon) + "-" + str(day)
+            ds = get_date_shortened(ca)
         sn = d["screen_name"]
         id_str = d["id_str"]
         sc = str(num_to_k(d["statuses_count"]))
@@ -330,17 +349,55 @@ def print_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
         is_valid = True
         if rtc < min_retweets:
             is_valid = False
-        if ds != "-UNK-":
-            if yr_cutoff is not None and int(ds[:4]) < yr_cutoff:
-                is_valid = False
-            if mon_cutoff is not None and int(ds[5:7]) < mon_cutoff:
-                is_valid = False
-            if day_cutoff is not None and int(ds[9]) < day_cutoff:
-                is_valid = False
+        is_valid = is_date_after(d["created_at"], date_cutoff)
         if is_valid == True:
             ret.append(sn)
             print(msg)
     return ret
+
+
+def print_alt_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
+    ret = []
+    total = 0
+    print("User                                            | sc    | fl    | fr    |egg|  ca        | name")
+    print("==================================================================================================")
+    for d in rdetails:
+        ds = "-UNK-"
+        if "created_at" in d:
+            ca = d["created_at"]
+            ds = get_date_shortened(ca)
+        sn = d["screen_name"]
+        id_str = d["id_str"]
+        sc = str(num_to_k(d["statuses_count"]))
+        fl = str(num_to_k(d["followers_count"]))
+        fr = "-"
+        if "friends_count" in d:
+            fr = str(num_to_k(d["friends_count"]))
+        egg = " "
+        if d["default_profile"] == True and d["default_profile_image"] == True:
+            egg = "X"
+        de = ""
+        if d["description"] is not None:
+            de = d["description"][:100]
+        n = d["name"]
+        sep = "\t"
+        if len(sn) < 12:
+            sep = "\t\t"
+        total += 1
+        rtc = 0
+        if sn in rtw:
+            rtc = rtw[sn]
+        msg = "https://twitter.com/" + sn + sep + "(" + str(rtc) + ")\t| " 
+        msg += sc + "\t| " + fl + "\t| " + fr + "\t| " + str(egg) + " | " + ds + " | " + n
+        is_valid = True
+        if rtc < min_retweets:
+            is_valid = False
+        is_valid = is_date_after(d["created_at"], date_cutoff)
+        if is_valid == True:
+            ret.append(sn)
+            print(msg)
+    return ret
+
 
 def print_category_match(full, include, exclude, min_rtw=1, date_cutoff=""):
     ret = []
@@ -937,6 +994,25 @@ def trim_graph2(inter, all_users, cutoff):
     return trimmed
 
 def get_communities(inter):
+    mapping = []
+    for source, targets in inter.items():
+        for target, count in targets.items():
+            mapping.append((source, target, count))
+    g=nx.Graph()
+    g.add_weighted_edges_from(mapping)
+    communities = community.best_partition(g)
+
+    clusters = {}
+    for node, mod in communities.items():
+        if mod not in clusters:
+            clusters[mod] = []
+        clusters[mod].append(node)
+    return clusters
+    
+    print("Calculating communities")
+    communities = community.best_partition(g)
+
+def get_communities_old(inter):
     names = set()
     print("Building vocab")
     for source, targets in inter.items():
@@ -1104,6 +1180,14 @@ def get_counters_and_interactions2(raw_data):
     stopwords = stopwords["en"]
     stopwords += ["rt", "-", "&amp;"]
 
+    ngram_names =  ["words",
+                    "2-grams",
+                    "3-grams",
+                    "4-grams",
+                    "5-grams",
+                    "6-grams",
+                    "7-grams"]
+
     counter_names = ["users",
                      "susp_users",
                      "influencers",
@@ -1117,10 +1201,11 @@ def get_counters_and_interactions2(raw_data):
                      "retweeters",
                      "replied_to",
                      "repliers",
-                     "words",
                      "domains",
+                     "sources",
                      "lang",
                      "urls"]
+
     user_fields = ["users",
                    "susp_users",
                    "influencers",
@@ -1146,6 +1231,7 @@ def get_counters_and_interactions2(raw_data):
     twid_url = {}
     twid_sn = {}
     twid_rsn = {}
+    twid_doc = {}
     sn_twid = {}
     rsn_twid = {}
     sn_hashtag = {}
@@ -1157,10 +1243,13 @@ def get_counters_and_interactions2(raw_data):
     url_twid = {}
     sn_url = {}
     url_sn = {}
+    sn_source = {}
+    source_sn = {}
     sn_details = {}
 
     susp_twids = set()
     orig_twids = set()
+    susp_orig_twids = set()
     retweeted_twids = set()
     replied_twids = set()
     quoted_twids = set()
@@ -1177,16 +1266,27 @@ def get_counters_and_interactions2(raw_data):
 
     oldest = 0
     newest = 0
+    all_min = 2
+    all_max = 5
+    min_tokens = 3
 
     for n in counter_names:
         counters[n] = Counter()
+    for n in ngram_names:
+        counters[n] = Counter()
+        twid_doc[n] = {}
+    twid_doc["all"] = {}
     count = 0
     for d in raw_data:
         count += 1
+        suspicious = False
+        original = False
         ca = twitter_time_to_readable(d["created_at"])
         unix = twitter_time_to_unix(d["created_at"])
         lang = d["lang"]
         counters["lang"][lang] += 1
+        source = get_tweet_source(d)
+        counters["sources"][source] += 1
         if oldest == 0:
             oldest = unix
         if unix > newest:
@@ -1201,6 +1301,12 @@ def get_counters_and_interactions2(raw_data):
         sn = d["user"]["screen_name"]
         if sn not in user_counts:
             user_counts[sn] = Counter()
+        if sn not in sn_source:
+            sn_source[sn] = Counter()
+        if source not in source_sn:
+            source_sn[source] = Counter()
+        sn_source[sn][source] += 1
+        source_sn[source][sn] += 1
         user_counts[sn][timestamp] += 1
         sn_details[sn] = d["user"]
         counters["users"][sn] += 1
@@ -1223,34 +1329,73 @@ def get_counters_and_interactions2(raw_data):
         retweet = False
         reply = False
 
-        tokens = tokenize_sentence(text, stopwords)
+        fbid = ["followback", "follow back", "Follow Back", "FOLLOWERS", "FOLLOW ME", "RT this", "RT THIS", "retweet this", "RETWEET THIS", "Retweet this", "Follow me", "please retweet", "Please retweet", "PLEASE RETWEET", "RETWEET the FLAG"]
+        for f in fbid:
+            if f in text:
+                susp_twids.add(twid)
+                suspicious = True
+                counters["susp_users"][sn] += 1
+
+        num_grams = len(ngram_names)
         num_w = 0
         num_ht = 0
-        num_m = 0
-        for t in tokens:
+        prev = deque()
+        docx = {}
+        for n in range(num_grams):
+            docx[ngram_names[n]] = []
+        stopwords = None
+        tokens = tokenize_sentence(text, stopwords)
+        for i, t in enumerate(tokens):
+            was_word = True
             if len(t) > 1:
                 if t[0] == "#":
                     num_ht += 1
+                    was_word = False
                 elif t[0] == "@":
-                    num_m += 1
+                    was_word = False
                 else:
                     num_w += 1
-                counters["words"][t] += 1
+                if was_word == True:
+                    prev.append(t)
+                    if len(prev) > num_grams:
+                        prev.popleft()
+                else:
+                    prev.clear()
+                if len(prev) > 0:
+                    last = list(prev)
+                    for n in range(len(last)):
+                        gram = " ".join(last[:n+1])
+                        cname = ngram_names[n]
+                        counters[cname][gram] += 1
+                        docx[cname].append(gram)
+        all_doc = []
+        for n in range(num_grams):
+            cname = ngram_names[n]
+            if n >= all_min:
+                if len(docx[cname]) > 0:
+                    for doc in docx[cname]:
+                        all_doc.append(doc)
+            if len(docx[cname]) >= min_tokens:
+                twid_doc[cname][twid] = docx[cname]
+        twid_doc["all"][twid] = all_doc
 
         num_images = 0
         if "image_urls" in d and d["image_urls"] is not None:
             num_images = len(d["image_urls"])
 
-        if like_count < retweet_count*2:
+        if like_count > 50 and like_count < retweet_count*2:
             susp_twids.add(twid)
+            suspicious = True
             counters["susp_users"][sn] += 1
 
         if num_images == 1 and num_w < 8 and num_ht >= 6:
             susp_twids.add(twid)
+            suspicious = True
             counters["susp_users"][sn] += 1
 
         if num_w < 1 and num_ht >= 6:
             susp_twids.add(twid)
+            suspicious = True
             counters["susp_users"][sn] += 1
 
         if "retweeted_status" in d:
@@ -1310,6 +1455,7 @@ def get_counters_and_interactions2(raw_data):
 
         if quote == True and num_w < 8 and num_ht >= 8:
             susp_twids.add(twid)
+            suspicious = True
             counters["susp_users"][sn] += 1
 
         if "mentioned" in d and d["mentioned"] is not None:
@@ -1342,7 +1488,11 @@ def get_counters_and_interactions2(raw_data):
             counters["influencers"][rep] += 1
 
         if quote == False and retweet == False and reply == False:
+            original = True
             orig_twids.add(twid)
+
+        if original == True and suspicious == True:
+            susp_orig_twids.add(twid)
 
         if "hashtags" in d:
             ht = d["hashtags"]
@@ -1447,6 +1597,7 @@ def get_counters_and_interactions2(raw_data):
     full["sn_twid"] = sn_twid
     full["rsn_twid"] = rsn_twid
     full["orig_twids"] = orig_twids
+    full["susp_orig_twids"] = susp_orig_twids
     full["retweeted_twids"] = retweeted_twids
     full["replied_twids"] = replied_twids
     full["quoted_twids"] = quoted_twids
@@ -1454,6 +1605,8 @@ def get_counters_and_interactions2(raw_data):
     full["sn_hashtag"] = sn_hashtag
     full["domain_sn"] = domain_sn
     full["sn_domain"] = sn_domain
+    full["sn_source"] = sn_source
+    full["source_sn"] = source_sn
     full["domain_twid"] = domain_twid
     full["url_sn"] = url_sn
     full["sn_url"] = sn_url
@@ -1473,6 +1626,7 @@ def get_counters_and_interactions2(raw_data):
     print("Found " + str(len(counters["hashtags"])) + " hashtags.")
     print("Found " + str(len(counters["urls"])) + " urls.")
     print("Found " + str(len(counters["domains"])) + " domains.")
+    print("Found " + str(len(counters["sources"])) + " sources.")
     print("Found " + str(len(counters["amplifiers"])) + " amplifiers.")
     print("Found " + str(len(counters["influencers"])) + " influencers.")
     print("Found " + str(len(counters["repliers"])) + " repliers.")
@@ -1485,6 +1639,7 @@ def get_counters_and_interactions2(raw_data):
     print("Found " + str(len(counters["mentioners"])) + " mentioners.")
     print("Found " + str(len(orig_twids)) + " original tweets.")
     print("Found " + str(len(susp_twids)) + " suspicious tweets.")
+    print("Found " + str(len(susp_orig_twids)) + " suspicious original tweets.")
     print("Found " + str(len(retweeted_twids)) + " retweets.")
     print("Found " + str(len(quoted_twids)) + " quote tweets.")
     print("Found " + str(len(replied_twids)) + " replies.")
@@ -1582,6 +1737,17 @@ def get_timestamps(num):
     current_unix = get_utc_unix_time()
     timestamps = []
     for _ in range(num):
+        timestamp = datetime.fromtimestamp(int(current_unix)).strftime('%Y-%m-%d %H:00')
+        timestamps.append(timestamp)
+        current_unix -= 3600
+    return timestamps
+
+def get_timestamp_range(start, end):
+    start_unix = int(datetime.strptime(start, "%Y-%m-%d %H:%M:%S").strftime("%s"))
+    end_unix = int(datetime.strptime(end, "%Y-%m-%d %H:%M:%S").strftime("%s"))
+    current_unix = end_unix
+    timestamps = []
+    while current_unix > start_unix:
         timestamp = datetime.fromtimestamp(int(current_unix)).strftime('%Y-%m-%d %H:00')
         timestamps.append(timestamp)
         current_unix -= 3600

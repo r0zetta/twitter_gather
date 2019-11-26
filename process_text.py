@@ -4,6 +4,9 @@ import re
 import spacy
 from nltk.stem.snowball import SnowballStemmer
 import spacy
+from string import punctuation
+
+punctuation += "‘“"
 
 def get_tweet_tags(tweet):
     preprocessed = preprocess_text(tweet)
@@ -32,52 +35,42 @@ def preprocess_text(text, lang="en"):
     if len(text.split()) > 5:
         return text
 
+def is_valid_token(r, stopwords=None):
+    good = True
+    hashtag = False
+    if r in stopwords:
+        return None
+    if r[0] == "#":
+        hashtag = True
+    if r == "rt":
+        return None
+    if r[0] == "@":
+        return None
+    if r.startswith("htt"):
+        return None
+    if r.startswith("t.co/"):
+        return None
+    if "&amp;" in r:
+        return None
+    r = r.replace("’", "'")
+    r = r.strip(punctuation)
+    if r is None or len(r) < 1:
+        return None
+    if hashtag == True:
+        if r[0] != "#":
+            return "#" + r
+    return r
+
 # Tokenize sentence into words
 def tokenize_sentence(text, stopwords=None):
-    words = re.split(r'(\s+)', text)
-    if len(words) < 1:
-        return
-    tokens = []
-    for w in words:
-        if w is not None:
-            w = w.strip()
-            w = w.lower()
-            if w.isspace() or w == "\n" or w == "\r":
-                w = None
-            if w is not None and "http" in w:
-                w = None
-            if w is not None and len(w) < 1:
-                w = None
-            if w is not None and u"…" in w:
-                w = None
-            if w is not None:
-                tokens.append(w)
-    if len(tokens) < 1:
-        return []
-# Remove stopwords and other undesirable tokens
-    cleaned = []
-    endtoks = [":", ",", "\'", "…", "."]
-    for token in tokens:
-        if len(token) > 0:
-            if stopwords is not None:
-                if token in stopwords:
-                    token = None
-            if token is not None and len(token) > 0 and token[-1] in endtoks:
-                token = token[0:-1]
-            if token is not None and len(token) > 0 and token[0] in endtoks:
-                token = token[1:]
-            if token is not None:
-                if re.search(".+…$", token):
-                    token = None
-            if token is not None:
-                if token == "#":
-                    token = None
-            if token is not None:
-                cleaned.append(token)
-    if len(cleaned) < 1:
-        return []
-    return cleaned
-
+    clean_tokens = []
+    raw_tokens = text.split()
+    for r in raw_tokens:
+        r = r.lower()
+        tok = is_valid_token(r, stopwords=None)
+        if tok is not None:
+            clean_tokens.append(tok)
+    return clean_tokens
 
 
 def get_tokens_nlp(doc, stemmer, lang="en"):
