@@ -229,8 +229,9 @@ def dump_event():
 ###############
 def get_tweet_details(d):
     tweet_fields = ["id_str",
-                    "text",
                     "lang",
+                    "text",
+                    "full_text",
                     "created_at", 
                     "in_reply_to_screen_name",
                     "in_reply_to_status_id",
@@ -238,8 +239,7 @@ def get_tweet_details(d):
                     "retweet_count", 
                     "favorite_count", 
                     "quote_count", 
-                    "reply_count", 
-                    "source"]
+                    "reply_count"]
     user_fields = ["id_str",
                    "screen_name",
                    "name",
@@ -278,6 +278,10 @@ def get_tweet_details(d):
         for fu in user_fields:
             if fu in u:
                 entry["user"][fu] = u[fu]
+    text = get_text(d)
+    entry["text"] = text
+    source = get_tweet_source(d)
+    entry["source"] = source
     entry["hashtags"] = get_hashtags_preserve_case(d)
     entry["urls"] = get_urls(d)
     entry["image_urls"] = get_image_urls(d)
@@ -497,7 +501,7 @@ if __name__ == '__main__':
         print("Preparing stream")
         print("IDs: " + query)
     elif followid == True:
-        print("Listening to accounts (sn)")
+        print("Listening to accounts (id)")
         conf["mode"] = "followid"
         to_follow = []
         if len(input_params) > 0:
