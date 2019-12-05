@@ -260,12 +260,18 @@ def get_tweet_details(d):
     for f in tweet_fields:
         if f in d:
             entry[f] = d[f]
+    if "lang" not in entry:
+        entry["lang"] = "None"
     if "retweeted_status" in d:
         s = d["retweeted_status"]
         entry["retweeted_status"] = {}
         for f in tweet_fields:
             if f in s:
                 entry["retweeted_status"][f] = s[f]
+        rtext = get_text(s)
+        entry["retweeted_status"]["text"] = rtext
+        if "lang" not in entry["retweeted_status"]:
+            entry["retweeted_status"]["lang"] = "None"
         if "user" in s:
             u = s["user"]
             entry["retweeted_status"]["user"] = {}
@@ -336,12 +342,9 @@ def preprocess_tweet(status):
         sys.stdout.write("-")
         sys.stdout.flush()
         return
-    if "lang" not in status:
-        debug_print("No lang")
-        sys.stdout.write("-")
-        sys.stdout.flush()
-        return
-    lang = status["lang"]
+    lang = "None"
+    if "lang" in status:
+        lang = status["lang"]
     debug_print("lang="+lang)
     increment_counter("tweets_" + lang)
     if len(conf["languages"]) > 0:

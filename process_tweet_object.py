@@ -208,13 +208,14 @@ def get_image_urls(status):
     return ret
 
 def get_text(status):
-    text = ""
+    text = None
     if "full_text" in status:
         text = status["full_text"]
-    if "text" in status:
+    if text is not None and "text" in status:
         text = status["text"]
-    text = text.strip()
-    text = re.sub("\n", " ", text)
+    if text is not None:
+        text = text.strip()
+        text = re.sub("\n", " ", text)
     return text
 
 def user_is_egg(user):

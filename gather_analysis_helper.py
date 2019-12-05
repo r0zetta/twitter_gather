@@ -301,7 +301,7 @@ def print_tweet_counts(tc):
         count, date = item
         print(str(count) +  "\t" + date)
 
-def print_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
+def print_summary_list(rdetails, rtw, min_retweets, date_cutoff):
     ret = []
     total = 0
     print("User                                            | sc    | fl    | fr    |egg|  ca        | summary")
@@ -346,17 +346,17 @@ def print_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
             rtc = rtw[sn]
         msg = "https://twitter.com/" + sn + sep + "(" + str(rtc) + ")\t| " 
         msg += sc + "\t| " + fl + "\t| " + fr + "\t| " + str(egg) + " | " + ds + " | " + summary
-        is_valid = True
+        is_valid_rtc = True
         if rtc < min_retweets:
-            is_valid = False
-        is_valid = is_date_after(d["created_at"], date_cutoff)
-        if is_valid == True:
+            is_valid_rtc = False
+        is_valid_date = is_date_after(d["created_at"], date_cutoff)
+        if is_valid_rtc == True and is_valid_date == True:
             ret.append(sn)
             print(msg)
     return ret
 
 
-def print_alt_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
+def print_alt_summary_list(rdetails, rtw, min_retweets, date_cutoff):
     ret = []
     total = 0
     print("User                                            | sc    | fl    | fr    |egg|  ca        | name")
@@ -389,17 +389,17 @@ def print_alt_summary_list(rdetails, rtw, min_retweets=1, date_cutoff=""):
             rtc = rtw[sn]
         msg = "https://twitter.com/" + sn + sep + "(" + str(rtc) + ")\t| " 
         msg += sc + "\t| " + fl + "\t| " + fr + "\t| " + str(egg) + " | " + ds + " | " + n
-        is_valid = True
+        is_valid_rtc = True
         if rtc < min_retweets:
-            is_valid = False
-        is_valid = is_date_after(d["created_at"], date_cutoff)
-        if is_valid == True:
+            is_valid_rtc = False
+        is_valid_date = is_date_after(d["created_at"], date_cutoff)
+        if is_valid_rtc == True and is_valid_date == True:
             ret.append(sn)
             print(msg)
     return ret
 
 
-def print_category_match(full, include, exclude, min_rtw=1, date_cutoff=""):
+def print_category_match(full, include, exclude, min_rtw, date_cutoff):
     ret = []
     sn_details = full["sn_details"]
     rdetails = []
@@ -426,9 +426,9 @@ def print_category_match(full, include, exclude, min_rtw=1, date_cutoff=""):
             if len(set(suml).intersection(set(exclude))) < 1:
                 rdetails.append(d)
                 rtw[sn] = full["counters"]["users"][sn]
-    return print_summary_list(rdetails, rtw, min_retweets=min_rtw, date_cutoff=date_cutoff)
+    return print_alt_summary_list(rdetails, rtw, min_retweets=min_rtw, date_cutoff=date_cutoff)
 
-def print_url_amplifiers(url, full, min_retweets=1, date_cutoff=""):
+def print_url_amplifiers(url, full, min_retweets, date_cutoff):
     ret = []
     url_sn = full["url_sn"]
     sn_details = full["sn_details"]
@@ -455,9 +455,9 @@ def print_url_amplifiers(url, full, min_retweets=1, date_cutoff=""):
     for sn in rlist:
         if sn in sn_details:
             rdetails.append(sn_details[sn])
-    return print_summary_list(rdetails, rtw, min_retweets=min_retweets, date_cutoff=date_cutoff)
+    return print_alt_summary_list(rdetails, rtw, min_retweets=min_retweets, date_cutoff=date_cutoff)
 
-def print_hashtag_amplifiers(hashtag, full, min_retweets=1, date_cutoff=""):
+def print_hashtag_amplifiers(hashtag, full, min_retweets, date_cutoff):
     ret = []
     hashtag_sn = full["hashtag_sn"]
     sn_details = full["sn_details"]
@@ -470,9 +470,9 @@ def print_hashtag_amplifiers(hashtag, full, min_retweets=1, date_cutoff=""):
     for sn in rlist:
         if sn in sn_details:
             rdetails.append(sn_details[sn])
-    return print_summary_list(rdetails, rtw, min_retweets=min_retweets, date_cutoff=date_cutoff)
+    return print_alt_summary_list(rdetails, rtw, min_retweets, date_cutoff)
 
-def print_target_amplifiers(target, full, min_retweets=1, date_cutoff=""):
+def print_target_amplifiers(target, full, min_retweets, date_cutoff):
     ret = []
     rsn_sn = full["rsn_sn"]
     sn_details = full["sn_details"]
@@ -485,7 +485,7 @@ def print_target_amplifiers(target, full, min_retweets=1, date_cutoff=""):
     for sn in rlist:
         if sn in sn_details:
             rdetails.append(sn_details[sn])
-    return print_summary_list(rdetails, rtw, min_retweets=min_retweets, date_cutoff=date_cutoff)
+    return print_alt_summary_list(rdetails, rtw, min_retweets=min_retweets, date_cutoff=date_cutoff)
 
 def print_most_amplified(full, cutoff, include_verified = False):
     ret = []
