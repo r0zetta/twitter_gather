@@ -209,14 +209,27 @@ def get_image_urls(status):
 
 def get_text(status):
     text = None
+    full_text = None
+
     if "full_text" in status:
-        text = status["full_text"]
-    if text is None and "text" in status:
+        full_text = status["full_text"]
+    if "text" in status:
         text = status["text"]
-    if text is not None:
-        text = text.strip()
-        text = re.sub("\n", " ", text)
-    return text
+    
+    ret = None
+    if text is not None and full_text is not None:
+        if len(full_text) > len(text):
+            ret = full_text
+        else:
+            ret = text
+    elif full_text is not None:
+        ret = full_text
+    else:
+        ret = text
+    if ret is not None:
+        ret = ret.strip()
+        ret = re.sub("\n", " ", ret)
+    return ret
 
 def user_is_egg(user):
     if "default_profile" in user and user["default_profile"] is not None:
