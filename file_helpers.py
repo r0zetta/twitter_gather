@@ -66,49 +66,46 @@ def write_gexf(mapping, filename, node_attrs=None, attr_names=None):
         label = "n" + str(index)
         vocab[node] = label
         vocab_inv[label] = node
-
-    msg = ""
-    header = ""
-    with open("config/gexf_header.txt", "r") as f:
-        for line in f:
-            header += line
-    msg += header + "\n"
-
-    if attr_names is not None and len(attr_names) > 0:
-        msg += "\t\t<attributes class=\"node\">\n"
-        for index, name in enumerate(attr_names):
-            msg += "\t\t\t<attribute id=\"" + str(index) + "\" title=\"" + str(name) + "\" type=\"integer\"/>\n"
-        msg += "\t\t</attributes>\n"
-
-
-    msg += "\t\t<nodes>\n"
-    indent = '\t\t\t'
-    for index, node in enumerate(nodes):
-        label = vocab[node]
-        entry = indent+ "<node id=\"" + str(label) + "\" label=\"" + str(node) + "\">\n"
-        if attr_names is not None and len(attr_names) > 0:
-            entry += indent + "\t<attvalues>\n"
-            for index, name in enumerate(attr_names):
-                a = node_attrs[node]
-                entry += indent + "\t\t<attvalue for=\"" + str(index) + "\" value=\"" + str(a[index]) + "\"/>\n"
-            entry += indent + "\t</attvalues>\n"
-        entry += indent + "</node>\n"
-        msg += entry
-    msg += "\t\t</nodes>\n"
     
-    msg += "\t\t<edges>\n"
-    for m in mapping:
-        sid = vocab[m[0]]
-        tid = vocab[m[1]]
-        w = m[2]
-        entry = indent + "<edge source=\"" + str(sid) + "\" target=\"" + str(tid) + "\" weight=\"" + str(w) + "\"/>\n"
-        msg += entry
-    msg += "\t\t</edges>\n"
-    msg += "\t</graph>\n"
-    msg += "</gexf>\n"
-
     with open(filename, "w") as f:
-        f.write(msg)
+        header = ""
+        with open("config/gexf_header.txt", "r") as f:
+            for line in f:
+                header += line
+        f.write(header + "\n")
+
+        if attr_names is not None and len(attr_names) > 0:
+            f.write("\t\t<attributes class=\"node\">\n")
+            for index, name in enumerate(attr_names):
+                f.write("\t\t\t<attribute id=\"" + str(index) + "\" title=\"" + str(name) + "\" type=\"integer\"/>\n")
+            f.write("\t\t</attributes>\n")
+
+
+        f.write("\t\t<nodes>\n")
+        indent = '\t\t\t'
+        for index, node in enumerate(nodes):
+            label = vocab[node]
+            entry = indent+ "<node id=\"" + str(label) + "\" label=\"" + str(node) + "\">\n"
+            if attr_names is not None and len(attr_names) > 0:
+                entry += indent + "\t<attvalues>\n"
+                for index, name in enumerate(attr_names):
+                    a = node_attrs[node]
+                    entry += indent + "\t\t<attvalue for=\"" + str(index) + "\" value=\"" + str(a[index]) + "\"/>\n"
+                entry += indent + "\t</attvalues>\n"
+            entry += indent + "</node>\n"
+            f.write(entry)
+        f.write("\t\t</nodes>\n")
+        
+        f.write("\t\t<edges>\n")
+        for m in mapping:
+            sid = vocab[m[0]]
+            tid = vocab[m[1]]
+            w = m[2]
+            entry = indent + "<edge source=\"" + str(sid) + "\" target=\"" + str(tid) + "\" weight=\"" + str(w) + "\"/>\n"
+            f.write(entry)
+        f.write("\t\t</edges>\n")
+        f.write("\t</graph>\n")
+        f.write("</gexf>\n")
 
 def save_heatmap(heatmap, filename):
     with open(filename, 'w') as handle:
