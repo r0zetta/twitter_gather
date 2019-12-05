@@ -211,7 +211,7 @@ def get_text(status):
     text = None
     if "full_text" in status:
         text = status["full_text"]
-    if text is not None and "text" in status:
+    if text is None and "text" in status:
         text = status["text"]
     if text is not None:
         text = text.strip()
