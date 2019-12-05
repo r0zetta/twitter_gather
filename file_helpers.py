@@ -69,8 +69,8 @@ def write_gexf(mapping, filename, node_attrs=None, attr_names=None):
     
     with open(filename, "w") as f:
         header = ""
-        with open("config/gexf_header.txt", "r") as f:
-            for line in f:
+        with open("config/gexf_header.txt", "r") as g:
+            for line in g:
                 header += line
         f.write(header + "\n")
 
