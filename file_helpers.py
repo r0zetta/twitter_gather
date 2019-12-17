@@ -107,6 +107,57 @@ def write_gexf(mapping, filename, node_attrs=None, attr_names=None):
         f.write("\t</graph>\n")
         f.write("</gexf>\n")
 
+def write_timelapse_gexf(mapping, filename, start_times, end_times, node_attrs=None, attr_names=None):
+    nodes = sorted(list(set([m[0] for m in mapping]).union(set([m[1] for m in mapping]))))
+    vocab = {}
+    vocab_inv = {}
+    for index, node in enumerate(nodes):
+        label = "n" + str(index)
+        vocab[node] = label
+        vocab_inv[label] = node
+    
+    with open(filename, "w") as f:
+        header = ""
+        with open("config/gexf_header.txt", "r") as g:
+            for line in g:
+                header += line
+        f.write(header + "\n")
+
+        if attr_names is not None and len(attr_names) > 0:
+            f.write("\t\t<attributes class=\"node\">\n")
+            for index, name in enumerate(attr_names):
+                f.write("\t\t\t<attribute id=\"" + str(index) + "\" title=\"" + str(name) + "\" type=\"integer\"/>\n")
+            f.write("\t\t</attributes>\n")
+
+
+        f.write("\t\t<nodes>\n")
+        indent = '\t\t\t'
+        for index, node in enumerate(nodes):
+            label = vocab[node]
+            start = start_times[node]
+            end = end_times[node]
+            entry = indent+ "<node id=\"" + str(label) + "\" label=\"" + str(node) + "\" start=\"" + str(start) + "\" end=\"" + str(end) + "\">\n"
+            if attr_names is not None and len(attr_names) > 0:
+                entry += indent + "\t<attvalues>\n"
+                for index, name in enumerate(attr_names):
+                    a = node_attrs[node]
+                    entry += indent + "\t\t<attvalue for=\"" + str(index) + "\" value=\"" + str(a[index]) + "\"/>\n"
+                entry += indent + "\t</attvalues>\n"
+            entry += indent + "</node>\n"
+            f.write(entry)
+        f.write("\t\t</nodes>\n")
+        
+        f.write("\t\t<edges>\n")
+        for m in mapping:
+            sid = vocab[m[0]]
+            tid = vocab[m[1]]
+            w = m[2]
+            entry = indent + "<edge source=\"" + str(sid) + "\" target=\"" + str(tid) + "\" weight=\"" + str(w) + "\"/>\n"
+            f.write(entry)
+        f.write("\t\t</edges>\n")
+        f.write("\t</graph>\n")
+        f.write("</gexf>\n")
+
 def save_heatmap(heatmap, filename):
     with open(filename, 'w') as handle:
         handle.write("Hour, 00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23\n")
